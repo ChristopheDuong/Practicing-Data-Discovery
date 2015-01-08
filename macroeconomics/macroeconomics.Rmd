@@ -1,0 +1,208 @@
+---
+title: "Car Sales and Macro-Economics"
+author: "Christophe Duong"
+date: "12/21/2014"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+---
+
+# Data Source and Description
+
+Two datasets were extracted manually from knoema.com:
+
+World Motor Vehicle Sales by country and type 2005-2012 (Publication date: 25 February, 2013):
+http://knoema.com/lnubnsd/world-motor-vehicle-sales-by-country-and-type-2005-2012
+
+The World Economic Outlook (WEO) database contains selected macroeconomic data series from the statistical appendix of the World Economic Outlook report, which presents the IMF staff's analysis and projections of economic developments at the global level, in major country groups and in many individual countries: (Publication date: 07 October, 2014)
+http://knoema.com/IMFWEO2014Oct/imf-world-economic-outlook-october-2014
+
+After retrieving them, these datasets were merged and combined into a single csv file that we are now using in the following analysis using R where we try to build a Linear Regression model using OLS to predict Car Sales figures depending on macroeconomics measures of any country in the world.
+
+# Basic Analysis
+## Data loading and preparation
+
+Load the data, shorten the column names to get cleaner output and remove outliers from all country (named under 'world'):
+
+```{r}
+df <- read.csv('data.csv')
+
+names(df)[names(df) == 'Gross.domestic.product..current.prices..U.S..dollars.'] <- 'GDP.USD'
+names(df)[names(df) == 'Current.account.balance..Percent.of.GDP.'] <- 'Current.Acc.Bal.PercGDP'
+names(df)[names(df) == 'Current.account.balance..U.S..dollars.'] <- 'Current.Acc.Bal.USD'
+names(df)[names(df) == 'Employment..Persons.'] <- 'Employment'
+names(df)[names(df) == 'Export.volume.of.goods.and.services..Percent.change.'] <- 'Export'
+names(df)[names(df) == 'Gross.domestic.product.based.on.purchasing.power.parity..PPP..valuation.of.country.GDP..Current.international.dollar.'] <- 'GDP.PPP'
+names(df)[names(df) == 'Gross.domestic.product.per.capita..current.prices..U.S..dollars.'] <- 'GDP.per.capita'
+names(df)[names(df) == 'Gross.domestic.product..constant.prices..Percent.change.'] <- 'GDP.PercChange'
+names(df)[names(df) == 'Gross.domestic.product..deflator..Index.'] <- 'GDP.deflatorIndex'
+names(df)[names(df) == 'Gross.national.savings..Percent.of.GDP.'] <- 'National.Savings'
+names(df)[names(df) == 'Import.volume.of.goods.and.services..Percent.change.'] <- 'Import'
+names(df)[names(df) == 'Inflation..average.consumer.prices..Index.'] <- 'Inflation.Index'
+names(df)[names(df) == 'Inflation..average.consumer.prices..Percent.change.'] <- 'Inflation.PercChange'
+names(df)[names(df) == 'Investment..Percent.of.GDP.'] <- 'Investment'
+names(df)[names(df) == 'Output.gap.in.percent.of.potential.GDP..Percent.of.potential.GDP.'] <- 'Output.Gap'
+names(df)[names(df) == 'Population..Persons.'] <- 'Population'                                    
+names(df)[names(df) == 'Trade.volume.of.goods.and.services..Percent.change.'] <- 'Trade.Volume'     
+names(df)[names(df) == 'Unemployment.rate..Percent.of.total.labor.force.'] <- 'Unemployment.Rate'
+
+df <- df[df$GDP.USD < 40000,]
+todrop <- c("Commercial.vehicles","Passengers.Cars", "Trade.Volume")
+df <- df[,!(names(df) %in% todrop)]
+```
+
+## Basic Scatter Plot
+
+We want to check if some macroeconomics metrics would be linearly dependent with car sales in the world.
+Let's first look at a scatter plot:
+
+```{r}
+library(ggplot2)
+qplot(df$All.vehicles, df$GDP.USD) +
+  xlab("Amount of All Vehicles Sold") + 
+  ylab("GDP in US Dollars")
+```
+
+## Fit a Simple Linear Regression Model
+
+Let's fit a linear regression model through that data and look at the resulting residuals. 
+
+As we are using only one independent variable, it is called a **simple linear regression**:
+```{r}
+excludedCountries <- c('japan', 'china', 'united states of america');
+dfExcluded <- df[!(df$country %in% excludedCountries),]
+dfNonExcluded <- df[(df$country %in% excludedCountries),]
+fit <- lm(data=dfExcluded, All.vehicles ~ GDP.USD)
+summary(fit)
+yhat <- predict(fit)
+yhat2 <- predict(fit, newdata = dfNonExcluded)
+```
+
+We actually identified visually a certain number of countries such as Japan, China and USA to behave quite differently from the other countries of the world as their car sales are not as linearly dependent as the others. Therefore, we choose to display the residual bars in green for all the countries other than these 'outlier' countries which are displayed in red: 
+
+```{r}
+qplot(x = GDP.USD, y = All.vehicles, data=df) +
+      geom_smooth(method="lm", se=FALSE, size=1, data=df) +
+      geom_segment(data= dfExcluded, x=dfExcluded$GDP.USD,
+                   y=dfExcluded$All.vehicles,
+                   xend=dfExcluded$GDP.USD,
+                   yend=yhat, colour=I("green"),alpha=0.5) +
+      geom_point(data=dfNonExcluded, shape=23) +
+      geom_segment(data= dfNonExcluded, x=dfNonExcluded$GDP.USD,
+                   y=dfNonExcluded$All.vehicles,
+                   xend=dfNonExcluded$GDP.USD,
+                   yend=yhat2, colour=I("red"),alpha=0.5) +
+      ylab("Amount of All Vehicles Sold") +
+      xlab("GDP in US Dollars")
+```
+
+Using some various built-in regression diagnostics plots:
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+We can already notice that some of the assumptions on this model based on linear regression are not respected (normality for example)
+
+# Data Analysis using more variables
+## Fit a Multiple Linear Regression Model
+
+Now, let's consider all the independent variables together, therefore we are running a ***multiple linear regression*** instead:
+
+```{r}
+fitMore <- lm(data=df, All.vehicles ~ . - year - X - country)
+summary(fitMore)
+```
+
+## Stepwise Linear Regression Model
+
+The previous model was ending up using a lot of independent variables that are not significant. Let's optimize the model by trying to add or remove some of them and optimize by looking at the Akaike information criterion (AIC) value which tries to deal with the concepts of goodness of fit of the model and its complexity:
+
+```{r}
+library(MASS)
+fitStep <- stepAIC(fitMore, direction="both", trace=0)
+
+summary(fitStep)
+```
+
+We can now notice that the R-Squared and model's overal p-value has been barely affected but we went from a F-Statistic of 632.5 to 1084 with the stepwise approach.
+
+As a test, let's try to remove even some more of the non-significant variables and see the effect on the R-Squared value:
+
+```{r}
+fitStep <- lm(data=df, All.vehicles ~ Current.Acc.Bal.PercGDP + Current.Acc.Bal.USD + Employment + GDP.USD + National.Savings + Investment + Output.Gap)
+              
+summary(fitStep)
+```
+
+The Adjusted R-Squared is now slightly decreasing from 0.9812 to 0.9805 but the F-Statistic is again increasing from 1084 to 1487.
+
+## Eliminating correlation and looking at interactions
+
+By studying the VIF between the variables, we can pursue further and decide to remove some of the correlated variables too and then study interactions with the remaining ones:
+
+```{r}
+fitInteraction <- lm(data=df, All.vehicles ~  GDP.USD*Investment + Output.Gap)        
+summary(fitInteraction)
+
+library(effects)
+plot(effect("GDP.USD:Investment", fitInteraction, xlevels=list(wt=c(2,3))), multiline=TRUE)
+
+fitStep <- fitInteraction
+```
+
+Again the R-Squared is not significantly affected but the F-Statistic gain a bigger amount of increase up to 2659. We can also conclude from the interaction graph that depending on the GDP level, when Investments made by the goverment are higher, there is also higher car sales in that country. This effect is more pronounced when the GDP is higher than when it is lower. 
+
+## Regression Diagnostics
+### Checking Linear Relation
+
+If the relation between the IVs and the DV is linear, _no
+pattern_ should appear in the scatter plot:
+
+```{r}
+library(car)
+qplot(predict(fitStep), resid(fitStep), geom="point") + geom_hline(yintercept=0)
+```
+
+As it seems to exist a slight pattern, the linear relation in this data set may not hold true.
+
+### Checking Normality
+
+```{r}
+x <- resid(fitStep)
+qqPlot(fitStep,main = "QQ-Plot")
+
+qplot(x,geom="blank") +
+geom_histogram( colour=I("white"), aes(y=..density..)) +
+  stat_function(fun=dnorm, aes(colour="Normal"),arg=list(mean=mean(resid(fitStep)),
+                                                         sd=sd(resid(fitStep))))
+```
+
+It almost look normal but because of some outliers as denoted previously in the scatter plot, normality may not be true either for all the countries.
+
+### Checking Homoscedasticity
+
+```{r}
+library(lmtest)
+qplot(predict(fitStep),resid(fitStep), geom="point")
+spreadLevelPlot(fitStep)
+bptest(fitStep)
+```
+
+The line doesn't seem to be horizontal and the statistic test of Breusch–Pagan seems to indicate heteroskedasticity in our model with a significant p-value below our alpha threshold so we may not satisfy the homogeneity of variance assumption either.
+
+### Checking Independence
+
+```{r independence}
+durbinWatsonTest(fitStep)
+```
+
+The Durbin-Watson test value of 1.367461 is not close to 2 but the p-value is below alpha so we can conclude that errors are not correlated. (as the value is not less than 1.0, there may not be cause for alarm)
+
+# Conclusion
+
+As a conclusion, even though we may have obtained an amazing Ordinary Least Square Linear Regression model with an adjusted R-Squared of 0.9809, we failed to verify multiple of its assumptions so the built model may not be usable to predict and plan marketing strategies of Car Sales per country based on macroeconomics measures.
+
+
