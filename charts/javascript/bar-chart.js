@@ -1,5 +1,6 @@
 var chart;
 var data;
+var maxDataPoint = 100;
 
 function init(file) {
     d3.csv(file, function(error, d) {
@@ -10,15 +11,22 @@ function init(file) {
             data = d;
             chart = initPlot(extractColumnNames(data));
             setTimeout(function() {
-                refreshData(convertCSVtoChartData(data));
+                refresh();
             }, 1000);
         }
     });
 }
 
+function refresh() {
+    refreshData(convertCSVtoChartData(data));
+}
+
 // build the c3.js chart with the desired functionalities
 function initPlot(features) {
     var chart = c3.generate({
+        padding: {
+            left: 200
+        },
         bindto: '#chart',
         data: {
             x: 'x',
@@ -34,7 +42,7 @@ function initPlot(features) {
                     text: 'Variable Name',
                     position: 'outer-middle'
                 }
-            },
+            }
         },
         grid: {
             x: {
@@ -55,7 +63,7 @@ function initPlot(features) {
                 title: function(d) {
                     var shown = chart.data.shown();
                     var name = Object.keys(data[d])[0];
-                    return data[d][name] + " = " + sumValues(data[d], shown).toFixed(2);
+                    return data[d][name] + " = " + sumVariableValues(data[d], shown).toFixed(2);
                 }
             }
         },
@@ -71,10 +79,13 @@ function initPlot(features) {
                         $$.isTargetToShow(id) ? $$.api.focus(id) : $$.api.revert();
                     }
                     setTimeout(function() {
-                        refreshData(convertCSVtoChartData(data));
+                        refresh();
                     }, 500);
                 }
             }
+        },
+        subchart: {
+        	show: true
         }
     });
     chart.groups(features);
@@ -91,8 +102,8 @@ function refreshData(data) {
 // sum all selected features and compare totals
 function comparePoints(a, b) {
     var shown = chart.data.shown();
-    var aTotal = sumValues(a, shown);
-    var bTotal = sumValues(b, shown);
+    var aTotal = sumVariableValues(a, shown);
+    var bTotal = sumVariableValues(b, shown);
     return bTotal - aTotal;
 }
 
@@ -110,12 +121,12 @@ function isShown(key, shown) {
     return result;
 }
 
-function sumValues(x, shown) {
+function sumVariableValues(x, shown) {
     var total = 0;
     var keys = Object.keys(x);
     for (var i = 1; i < keys.length; ++i) {
-        if (shown == null || shown.length == 0 || isShown(keys[i], shown)) {
-            var key = keys[i];
+        var key = keys[i];
+        if (shown == null || shown.length == 0 || isShown(key, shown)) {
             if (isNumber(x[key])) {
                 total += parseFloat(x[key]);
             }
@@ -134,8 +145,8 @@ function convertCSVtoChartData(data) {
         for (var i = 1; i < keys.length; ++i) {
             result.push([keys[i]]);
         }
-        // limit to the 20 best variables
-        for (var i = 0; i < data.length && i < 20; ++i) {
+        // limit to the maxDataPoint best variables
+        for (var i = 0; i < data.length && i < maxDataPoint; ++i) {
             for (var j = 0; j < keys.length; ++j) {
                 if (j == 0 || isNumber(data[0][keys[j]])) {
                     result[j].push(data[i][keys[j]]);
