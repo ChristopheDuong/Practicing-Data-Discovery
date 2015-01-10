@@ -53,8 +53,8 @@ function initPlot(features) {
         tooltip: {
             format: {
                 title: function(d) {
-                	var shown = chart.data.shown();
-                	var name = Object.keys(data[d])[0];
+                    var shown = chart.data.shown();
+                    var name = Object.keys(data[d])[0];
                     return data[d][name] + " = " + sumValues(data[d], shown).toFixed(2);
                 }
             }
@@ -93,7 +93,7 @@ function comparePoints(a, b) {
     var shown = chart.data.shown();
     var aTotal = sumValues(a, shown);
     var bTotal = sumValues(b, shown);
-    return aTotal < bTotal;
+    return bTotal - aTotal;
 }
 
 function isNumber(n) {
@@ -128,15 +128,18 @@ function sumValues(x, shown) {
 function convertCSVtoChartData(data) {
     var result = [];
     if (data != null && data.length > 0) {
-        data.sort(comparePoints);
+        data = data.sort(comparePoints);
         var keys = Object.keys(data[0]);
         result.push(['x']);
         for (var i = 1; i < keys.length; ++i) {
             result.push([keys[i]]);
         }
-        for (var i = 0; i < data.length; ++i) {
+        // limit to the 20 best variables
+        for (var i = 0; i < data.length && i < 20; ++i) {
             for (var j = 0; j < keys.length; ++j) {
-                result[j].push(data[i][keys[j]]);
+                if (j == 0 || isNumber(data[0][keys[j]])) {
+                    result[j].push(data[i][keys[j]]);
+                }
             }
         }
     }
@@ -150,7 +153,9 @@ function extractColumnNames(data) {
         var keys = Object.keys(data[0]);
         // first one is the category name, skip it
         for (var i = 1; i < keys.length; ++i) {
-            result.push(keys[i]);
+            if (isNumber(data[0][keys[i]])) {
+                result.push(keys[i]);
+            }
         }
     }
     return [result];
