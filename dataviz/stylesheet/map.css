@@ -1,0 +1,23 @@
+html, body, #google-map-view {
+  margin: 0;
+  padding: 0;
+  height: 90%;
+  font: 10px sans-serif;
+}
+
+.bar rect {
+  fill: steelblue;
+  shape-rendering: crispEdges;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.brush .extent {
+  stroke: #f00;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
