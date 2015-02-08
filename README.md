@@ -1,7 +1,7 @@
 Practicing-Data-Discovery
 =========================
 
-This work on Visualization was done using javascript library (D3.js and add-on C3.js) as I was helping one of my teacher to build a modelling tool (first version using Logistic Regression). The goal is to provide a chart visualization for variable selection to include a model:
+This work on Visualization was done using javascript library (D3.js and add-on C3.js) as I was helping one of my teacher to build a modelling tool (first version using Logistic Regression). The goal is to provide a chart visualization for variable selection to include in a model:
 
 http://christopheduong.github.io/Practicing-Data-Discovery/charts/index.html
 
