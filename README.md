@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-Practicing-Data-Discovery
-=========================
-
-Work on Visualization using javascript library (D3.js and add-on C3.js):
-
-http://christopheduong.github.io/Practicing-Data-Discovery/charts/
-
-Visualization using WebGL:
-http://christopheduong.github.io/Practicing-Data-Discovery/dataviz/uber.html
-
-Basic Data Manipulation using Pandas library to clean and transform datasets to study a specific question: 
-
-Are macroeconomics influencing car sales?
-
-http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/master/macroeconomics/Some%20macroeconomics.ipynb
-
-Data Analysis using R:
-
-http://christopheduong.github.io/Practicing-Data-Discovery/macroeconomics/macroeconomics.html
-
-Example of usage of LinkedIn API to make a simple Analysis of authors in subscribed discussion group's posts:
-
-http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/master/linkedin/SocialMediaAnalysis.ipynb
-=======
 Practicing-Data-Discovery
 =========================
 
@@ -46,11 +21,9 @@ Next, we can use our favorite statistical tool to conduct Data Analysis using R 
 http://christopheduong.github.io/Practicing-Data-Discovery/macroeconomics/macroeconomics.html
 
 
-
 Example of usage of LinkedIn API to make a simple Analysis of authors in subscribed discussion group's posts:
 
 http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/master/linkedin/SocialMediaAnalysis.ipynb
-
 
 Natural Language Processing using NLTK library in Python:
 
@@ -61,4 +34,3 @@ http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blo
 A naive implementation of Sentence-ranking and extraction applied to Summarization:
 
 http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/gh-pages/NLP/summarization.ipynb
->>>>>>> 8a01390... Clean up

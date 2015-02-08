@@ -168,7 +168,7 @@ function displayData(data, numComponents, pointSize) {
     var textureSizeLocation = gl.getUniformLocation(self.pointProgram, "pointSize");
     gl.uniform2f(textureSizeLocation, pointSize, pointSize);
 
-    refreshTimeInterval(0.1, 0.1001);
+    refreshTimeInterval(0, 1.0);
 }
 
 function refreshTimeInterval(minValue, maxValue) {
@@ -218,8 +218,8 @@ function ready() {
                     ++i;
                 });
                 n.close();
-                displayData(rawData, 3, 0.3);
                 displayHistogram();
+                displayData(rawData, 3, 0.3);
             }
         });
     }
@@ -325,8 +325,6 @@ function onKeyPress() {
         } else if (key == 38) {
             d3.select(".brush").call(brush.extent([b[0] - shift * 10, b[1] - shift * 10]));
             brushed();
-        } else {
-            console.log(key);
-        }
+        } 
     }
 }
