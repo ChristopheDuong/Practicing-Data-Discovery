@@ -202,7 +202,7 @@ function ready() {
             theme: 'relax'
         });
 
-        d3.csv('data/all.csv', function(error, data) {
+        d3.csv('https://raw.githubusercontent.com/ChristopheDuong/data/master/SanFrancisco/all.csv', function(error, data) {
             if (error != null) {
                 console.warn(error);
             } else {
