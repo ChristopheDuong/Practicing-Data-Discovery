@@ -194,7 +194,82 @@ function LatLongToPixelXY(latitude, longitude) {
 }
 
 /****************************************************************
- *  D3.js part                                                  *
+ *  D3.js overlay                                               *
+ ****************************************************************/
+var topC = -10000;
+var leftC = -10000;
+var widthC = 20000;
+var heightC = 20000;
+
+var overlay = new google.maps.OverlayView();
+var mapSvg = null;
+
+overlay.onAdd = function() {
+    mapSvg = d3.select(this.getPanes().overlayLayer)
+        .append("svg")
+        .attr({
+            id: "svgRoot",
+        });
+    overlay.draw = function() {
+        mapSvg.style({
+            position: "absolute",
+            top: topC + "px",
+            left: leftC + "px",
+            width: widthC + "px",
+            height: heightC + "px",
+        });
+        drawPathData(leftC, topC);
+    };
+};
+overlay.onRemove = function() {
+    var markers = mapSvg.selectAll("pathMarker")
+                        .data(pathData);
+
+    markers.remove();
+}
+overlay.setMap(map);
+
+var pathData = null;
+
+function googleMapProjection(prj) {
+    return function(coordinates) {
+        var googleCoordinates = new google.maps.LatLng(coordinates[1], coordinates[0]);
+        var pixelCoordinates = prj.fromLatLngToDivPixel(googleCoordinates);
+        return [pixelCoordinates.x + 10000, pixelCoordinates.y + 10000];
+    }
+}
+
+function toPixel(prj, latlng) {
+    ret = prj.fromLatLngToDivPixel(new google.maps.LatLng(latlng[0], latlng[1]))
+    return [ret.x, ret.y];
+}
+
+function drawPathData(leftC, topC) {
+    mapSvg.selectAll("path").remove();
+    if (pathData != null) {
+        var projection = overlay.getProjection()
+        
+        var prj = googleMapProjection(projection);
+        var path = d3.geo.path().projection(prj);
+
+        var lineFunction = d3.svg.line()
+                                 .x(function(d) { return toPixel(projection, d)[0]; })
+                                 .y(function(d) { return toPixel(projection, d)[1]; })
+                                 .interpolate("linear");
+
+        var markers = mapSvg.selectAll("path").data(pathData);
+        markers.enter().append("path").attr({
+            "d" : function (d) { return lineFunction(d); },
+            "stroke" : "red",
+            "stroke-width" : 3,
+            "fill" : "none",
+            "transform" : "translate(" + [-leftC, -topC] + ")"
+    });
+    }
+}
+
+/****************************************************************
+ *  D3.js bottom part                                           *
  ****************************************************************/
 
 var brush = null;

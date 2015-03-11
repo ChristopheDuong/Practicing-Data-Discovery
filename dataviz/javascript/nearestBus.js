@@ -72,6 +72,21 @@ function ready() {
                         displayHistogram();
                         displayData(rawData, componentsNb, pointSize);
                         console.log(count * 100.0 / i);
+
+                        file = '../../data/SanFrancisco/busLinePath.json';
+                        d3.json(file, function(error, busLinePathData) {
+                            if (error != null) {
+                                console.warn(error);
+                            } else {
+                                pathData = [];
+                                busLinePathData.forEach(function(busLine) {
+                                    if (busSet.has(busLine['tag'])) {
+                                        pathData = pathData.concat(busLine['path']);
+                                    }
+                                });
+                                overlay.draw();
+                            }
+                        });
                     }
                 });
             }

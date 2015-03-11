@@ -21,3 +21,8 @@ html, body, #google-map-view {
   fill-opacity: .125;
   shape-rendering: crispEdges;
 }
+
+.pathMarker {
+  stroke-width: 1.5px;
+  fill-opacity: 0.2;
+}
