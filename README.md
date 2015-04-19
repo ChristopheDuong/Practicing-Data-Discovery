@@ -34,3 +34,7 @@ http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blo
 A naive implementation of Sentence-ranking and extraction applied to Summarization:
 
 http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/gh-pages/NLP/summarization.ipynb
+
+An example on how to scale ARIMA model fitting for Time Series Analysis using Spark
+
+http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/gh-pages/arima_spark/ARIMA_Spark.ipynb
