@@ -1690,15 +1690,14 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The dataset used in this example comes from one of the Kaggle&#39;s competition: <a href="https://www.kaggle.com/c/global-energy-forecasting-competition-2012-load-forecasting">Global Energy Forecasting Competition 2012 - Load Forecasting</a></p>
-<p>The problem is described as a hierarchical load forecasting problem: backcasting and forecasting hourly loads (in kW) for a US utility with 20 zones. </p>
-<p>The competition provides load history that ranges from the 1st hour of 2004/1/1 to the 6th hour of 2008/6/30. In addition, corresponding temperatures time series are given and participants are also warned that some weeks are missing and thus would need to be backcasted or forecasted...</p>
-<p>In the context of this notebook, I am focusing only on one of the dataset: Energy Load history. As I am not interested in solving the competition itself, but only demonstrate how the use of some Big Data tools such as Spark could help processing this type of time series data by combining more traditional Statistical Tools (such as Python libraries and R) in a more scalable way. </p>
-<p><b>Therefore, assuming the basic steps on how to properly forecast one single time series is worked out:<br></p>
-<p><font size="4">How to apply the same method on a larger number of time series efficiently?</font></b></p>
-<p>Other potential questions could also be studied, such as <i>how to process one enormous time series?</i>
-This would be an interesting question when one single time series doesn&#39;t fully fit in memory and thus is difficult for traditional Python/R tool to handle. This problematic would study how to distribute and parallelize the computation of a single ARIMA on a Big Data cluster. </p>
-<p>However, again this is not the concern in the following notebook where we have 20 time series of ~40000 points but we would like to extend the processing to a larger number of time series of similar size (for example one million time series of 40000 points each). In the context of this dataset, we could imagine that we want to refine the Load forecasting in smaller zones to capture more granular variations of usage: Instead of looking at 20 different cities in the US, we wish to break it down further depending on the type of neighborhoods and we define the zones per street blocks. The data can therefore be aggregated in a much larger number of smaller zones but we would still use the same range of history (~4 years worth of data). We also wish to include diverse sources of data such as temperature, traffic, twitter activity etc so the number of time series will likely be growing, whereas the number of data points per time series will remain manageable for a single machine when taken individually.</p>
+<p>The dataset used in this example comes from one of the competitions hosted by Kaggle (Global Energy Forecasting Competition 2012 - Load Forecasting).</p>
+<p>The competition presented the challenge as a hierarchical load forecasting problem that required backcasting and forecasting hourly loads (in kW) for a US utility with 20 zones. It provides load history that ranges from the 1st hour of 2004/1/1 to the 6th hour of 2008/6/30. In addition, a corresponding temperatures time series is given and participants are also warned that some weeks are missing and thus would need to be backcasted or forecasted.</p>
+<p>In the context of this notebook, I will only be focusing on one of the datasets: Energy Load history. </p>
+<p>Moreover, for the purposes of this post, I am not interested in solving the competition itself, but only in demonstrating how the use of some Big Data tools such as Spark could help processing this type of time series data by combining more traditional Statistical Tools (such as Python libraries and R) in a more scalable way.</p>
+<p><b>Going forward, the assumption is made that the reader understands the basic steps on how to properly forecast one single time series. <br>The question then becomes:<br></p>
+<p><font size="4">How can one efficiently apply the same method on a larger number of time series?</font></b></p>
+<p>Other potential questions could also be studied, such as how to process one enormous time series? This would be an interesting question when one single time series doesn&#39;t fully fit in memory and thus becomes difficult for traditional Python/R tool to handle. This problem would study how to distribute and parallelize the computation of a single ARIMA on a Big Data cluster.</p>
+<p>However, again this is not the concern in the following notebook where we have 20 time series of ~40000 points but we would like to extend the processing to a larger number of time series of similar size (for example one million time series of 40000 points each). In the context of this dataset, we could imagine that we want to refine the Load forecasting in smaller zones to capture more granular variations of usage. Instead of looking at 20 different cities in the US, we wish to break it down further depending on the type of neighborhoods and we define the zones per street blocks. The data can therefore be aggregated in a much larger number of smaller zones but we would still use the same range of history (~4 years worth of data). We also wish to include diverse sources of data such as temperature, traffic, twitter activity etc so the number of time series will likely be growing, whereas the number of data points per time series will remain manageable for a single machine when taken individually.</p>
 </div>
 </div>
 </div>
@@ -1717,8 +1716,7 @@ This would be an interesting question when one single time series doesn&#39;t fu
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The first part of this notebook is done using a python environment because the Pandas library provides nice capabilities for easily manipulating the initial dataset. </p>
-<p>The entire step executed in this python part should be doable using Spark where the grouping/merging operations would be done using in-memory map-reduce operations. Therefore, with bigger volume of data, the Spark implementation would scale much better and benefit from hardware upgrades from adding more machines to the Spark cluster instead of using only a single machine for running the python code.</p>
+<p>The first part of this notebook is done using a Python environment because the Pandas library provides nice capabilities for easily manipulating the initial dataset. The entire step executed in this Python part should be doable using Spark where the grouping/merging operations would be done using in-memory map-reduce operations. Therefore, with the bigger volume of data, the Spark implementation would scale much better and benefit from hardware upgrades from adding more machines to the Spark cluster instead of using only a single machine for running the Python code.</p>
 <p>Unfortunately, even though Spark includes some <a href="https://databricks.com/blog/2015/02/17/introducing-dataframes-in-spark-for-large-scale-data-science.html">Data Frames concept in their latest releases of version 1.3</a>, I find it is not powerful enough to support custom aggregations functions with the group by operations: only predefined aggregation functions such as count, mean, min, max are usable on the grouped data. I may need to investigate further and take a look at <a href="https://databricks.com/blog/2015/01/07/ml-pipelines-a-new-high-level-api-for-mllib.html">MLLib pipeline API</a> but haven&#39;t had the time to do so yet. </p>
 <p>In my case, I needed to group by &#39;zone_id&#39; and compress all the time series data into a single row. As a consequence, I found it more difficult (but still possible) to write all this work using &quot;traditional&quot; Spark API functions and preferred to spend my time on other aspects instead... As a result, I implemented the data cleaning and transformation steps in python as shown below but reimplementing it using Spark API would be an interesting exercise for the future and useful practice with Spark mechanisms.</p>
 </div>
@@ -1739,7 +1737,7 @@ This would be an interesting question when one single time series doesn&#39;t fu
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As mentioned in the instructions of the Kaggle competition, multiple weeks of data are missing from the dataset and one of the tasks for participants is to fill these missing values up in a smart way.</p>
+<p>As mentioned in the instructions of the Kaggle competition, multiple weeks of data are missing from the dataset and one of the tasks for the participants is to fill these missing values up in a smart way.</p>
 <p>In this notebook, I won&#39;t go into forecasting or backcasting this data but simply propagate the last valid observation forward. Obviously this is certainly not a proper method if we are interested in forecasting accuracy afterward but it is the bare minimum required for successfully fitting a first naive ARIMA model.</p>
 </div>
 </div>
@@ -1963,9 +1961,9 @@ In&nbsp;[1]:
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>When looking at the table of data obtained previously after some quick cleaning, we observe that each row correspond to a day of measurements for each zone at different dates. There are 4 columns describing the location and the date and then 24 other columns for each hour of the day.</p>
+<p>When looking at the table of data obtained previously after some quick cleaning, we observe that each row corresponds to a day of measurements for each zone at different dates. There are 4 columns describing the location and the date and then 24 other columns for each hour of the day.</p>
 <p>A better format for this data would be to flatten one zone into a single row and have all the measurements as columns for all the dates merged together and ordered through time. Next step, the forecasting task would need to consider one row at a time in order to perform a univariate time series analysis.</p>
-<p>After transforming this particular dataset, the first data frame with 28 columns and 33000 rows of data is now reshaped into 20 rows (as we have 20 distincts zones) with 39600 columns (39600 measures taken at different time)</p>
+<p>After transforming this particular dataset, the first data frame with 28 columns and 33000 rows of data is now reshaped into 20 rows (as we have 20 distinct zones) with 39600 columns (39600 measures taken at different times).</p>
 </div>
 </div>
 </div>
@@ -2198,8 +2196,8 @@ In&nbsp;[2]:
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Before going forward with model fitting, let&#39;s first take a quick peek at one of the time serie data (first zone). </p>
-<p>It would be interesting to look at plots of Auto-Correlation and Partial Auto-Correlation functions too in order to determine the best parameters for the model but we are not too concerned with prediction accuracy for now. I could also assumed that I have an efficient way of determining automatically the best parameters for my ARIMA model, integrating ACF and PACF information into my decision then have a good way of modelling trend, seasonalities and distinguish different effects in my time series.</p>
+<p>Before going forward with model fitting, let&#39;s first take a quick peek at one of the time series (first zone).</p>
+<p>It would be interesting to look at plots of Auto-Correlation and Partial Auto-Correlation functions too in order to determine the best parameters for the model but we are not too concerned with prediction accuracy for now. I could also assumed that I have an efficient way of automatically determining the best parameters for my ARIMA model, integrating ACF and PACF information into my decision then have a good way of modelling trends and seasonality and of distinguishing different effects in my time series.</p>
 </div>
 </div>
 </div>
@@ -2235,7 +2233,7 @@ In&nbsp;[3]:
 
 <div class="output_text output_subarea output_pyout">
 <pre>
-[&lt;matplotlib.lines.Line2D at 0x7f8b493ae110&gt;]
+[&lt;matplotlib.lines.Line2D at 0x7fabdacaa290&gt;]
 </pre>
 </div>
 
@@ -2638,14 +2636,13 @@ PogvQPoelQAAAABJRU5ErkJggg==
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Before going further in describing the time series analysis using ARIMA models, let&#39;s first take a closer look at the gain that Spark can provide us in terms of scalability.</p>
-<p>In the next section, I will go through a simple computation of the average energy consumption calculation for each zone. 
-Even though this is executed on a single Spark node for testing purposes, it should still illustrates the advantages of using a framework like Spark in terms of speeding up the tasks. </p>
-<p>The benchmark test consist of the same function &quot;testParallelization&quot; defined below that will be executed in two scenarios:</p>
+<p>In the next section, I will go through a simple computation of the average energy consumption calculation for each zone. Even though this is executed on a single Spark node for testing purposes, it should still illustrate the advantages of using a framework like Spark in terms of speeding up the tasks.</p>
+<p>The benchmark test consists of the same function &quot;testParallelization&quot; defined below that will be executed in two scenarios:</p>
 <ul>
 <li>Input data is not partitioned</li>
 <li>Input data is partitioned such as each line of data is in a different partition</li>
 </ul>
-<p>In Spark, the data is represented into Resilient Distributed Dataset (RDD) that can be partitioned and distributed accross the nodes of the cluster. As a result, in the first scenario, if the RDD is not partitioned, a single spark node should process the whole data (20 rows) whereas in the second scenario, multiple spark nodes could potentially be processing each line separately. In the best case scenario, we could have 20 different computers working simultaneously, each one processing a different line (if we had such a cluster size and the data was distributed on the hard-drives such as each partition can be retrieved on distinct machines)</p>
+<p>In Spark, the data is represented into Resilient Distributed Dataset (RDD) that can be partitioned and distributed across the nodes of the cluster. As a result, in the first scenario, if the RDD is not partitioned, a single Spark node should process the whole data (20 rows) whereas in the second scenario, multiple Spark nodes could potentially be processing each line separately. In the best case scenario, we could have 20 different computers working simultaneously, each one processing a different line (if we had such a cluster size and the data was distributed on the hard-drives such as each partition can be retrieved on distinct machines)</p>
 </div>
 </div>
 </div>
@@ -2752,7 +2749,7 @@ Processing zone id 16
 Processing zone id 17
 Processing zone id 18
 Processing zone id 19
-Parallelization test was executed in 3.538412 seconds
+Parallelization test was executed in 3.371285 seconds
 
 </pre>
 </div>
@@ -2804,26 +2801,26 @@ In&nbsp;[6]:
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>
 Processing zone id 3
-Processing zone id 2
-Processing zone id 0
 Processing zone id 1
-Processing zone id 7
+Processing zone id 0
+Processing zone id 2
 Processing zone id 4
 Processing zone id 6
+Processing zone id 7
 Processing zone id 5
 Processing zone id 8
-Processing zone id 11
 Processing zone id 9
 Processing zone id 10
-Processing zone id 13
+Processing zone id 11
 Processing zone id 12
+Processing zone id 13
 Processing zone id 14
 Processing zone id 15
+Processing zone id 16
 Processing zone id 17
 Processing zone id 18
-Processing zone id 16
 Processing zone id 19
-Parallelization test was executed in 1.156639 seconds
+Parallelization test was executed in 1.021498 seconds
 
 </pre>
 </div>
@@ -2839,7 +2836,7 @@ Parallelization test was executed in 1.156639 seconds
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The execution trace of the second scenario shows that every partitions has been submitted for processing at the same time. Next they were randomly selected by whatever worker that was available for execution which is why the order of the output is not the same as the input data like in the previous scenario.</p>
-<p>The most interesting part is that there is already a significant improvement in overall processing time as it took approximatively onw second to run through all the zones. This can be explained even on a single spark node by the fact that it is similar to multi-threading processing where multiple averages were being computed parallel at the same time whereas the first scenario was computing average one line at a time sequentially in a mono-thread manner.</p>
+<p>The most interesting part is that there is already a significant improvement in overall processing time as it took approximatively one second to run through all the zones. This can be explained even on a single spark node by the fact that it is similar to multi-threading processing where multiple averages were being computed parallel at the same time whereas the first scenario was computing average one line at a time sequentially in a mono-thread manner.</p>
 <p>As a conclusion, Spark clusters would allow parallelization to a large number of simultaneous tasks whereas one single computer could process in parallel up to the number of CPUs on the machine only...</p>
 </div>
 </div>
@@ -2895,7 +2892,8 @@ In&nbsp;[7]:
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now I can define in my iPython notebook a function that is using some of the R packages to automatically select parameters and fit an ARIMA model. Here i am running that function on the first row of data to illustrate that process and show how the function is selecting a model.</p>
+<p>Now I can define in my iPython notebook a function that is using some of the R packages to automatically select parameters and fit an ARIMA model. Here I am running that function on the first row of data to illustrate that process and show how the function is selecting a model.</p>
+<p>Note that I didn&#39;t verified that I have indeed found an <a href="http://en.wikipedia.org/wiki/Box%E2%80%93Jenkins#Assumptions_for_a_stable_univariate_process">appropriate model afterward</a> but chose to keep this step as simple as possible because the point of the exercise is not building the proper time series model but how to apply such methods to a larger number of time series.</p>
 </div>
 </div>
 </div>
@@ -3027,7 +3025,8 @@ Final selection of coefficients:  [ 1.14273302  0.09472036  0.32647469 -1.075040
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Unfortunately when running Rmagic commands inside pySpark, I ran into errors and wasn&#39;t able to proceed further. As a result, I decided to rewrite my R function in an external Rscript file and use it as an external binary application. This should be a pretty common use case where ones wants to use R, or another tool that is not necessarily written in the same language as the front-end of our favorite Big Data tool. However it is still possible to combine them and benefit from the scalability offered by Spark.</p>
+<p>Unfortunately when running Rmagic commands inside pySpark, I ran into errors and wasn&#39;t able to 
+proceed further. As a result, I decided to rewrite my R function in an external Rscript file and use it as an external binary application. This should be a pretty common use case where one wants to use R, or another tool that is not necessarily written in the same language as the front-end of our favorite Big Data tool. However it is still possible to combine them and benefit from the scalability offered by Spark.</p>
 <p>Below is the code I am using in my external R file (displayed with syntax color highlighting thanks to the <a href="http://pygments.org/">pygments</a> libraries with <a href="http://pygments.org/docs/lexers/">SLexer</a>)  </p>
 </div>
 </div>
@@ -3189,8 +3188,8 @@ close<span class="p">(</span>f<span class="p">);</span>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Instead of getting all this complex notebook to make Spark work with both Python and R, I did actually investigate another approach of using directly <a href="http://amplab-extras.github.io/SparkR-pkg/">SparkR front-end</a> of Spark. However, at the time of the work presented in this notebook (April 2015), SparkR package was scheduled to be released in the upcoming spark version 1.4 due early summer 2015. As a result, my attempts with an early version of SparkR were not successfull as I ran into many cryptic errors while working with the data. I concluded that it was easier to work with a more stable version of an already released pySpark or in Scala at this time, than a version of SparkR still under development.</p>
-<p>Below is the code of my example using the pipe function from pySpark to build an RDD created by piping elements to a forked external process. The RDD is built based on the standard output of my external process where I am printing the coefficients of my ARIMA model for each row of data (each zone). </p>
+<p>Instead of using a complex mix of technology to make Spark work with both Python and R, I did actually investigate another approach of directly using <a href="http://amplab-extras.github.io/SparkR-pkg/">SparkR front-end</a> of Spark. However, at the time of the work presented in this notebook (April 2015), SparkR package was scheduled to be released in the upcoming spark version 1.4 due early summer 2015. As a result, my attempts with an early version of SparkR were not successful as I ran into many cryptic errors while working with the data. I concluded that it was easier to work with a more stable version of an already released pySpark or in Scala at this time, rather than a version of SparkR still under development.</p>
+<p>Below is the code of my example using the pipe function from pySpark to build an RDD created by piping elements to a forked external process. The RDD is built based on the standard output of my external process where I am printing the coefficients of my ARIMA model for each row of data (each zone).</p>
 <p>Note that some plot graphics are also being generated in the output folder for further inspections of the results. and it is working as expected: it is using different parameters for each model of each zone.</p>
 </div>
 </div>
@@ -3311,7 +3310,7 @@ In&nbsp;[10]:
 [1] &quot;Arima model for zone: 19 line 0&quot;
        ar1        ar2        ar3        ma1        ma2        ma3        ma4 
  2.5904549 -2.4842953  0.8605886 -2.2129364  1.4954252  0.1006447 -0.3783692 
-ARIMA calculations was executed in 298.09801 seconds
+ARIMA calculations was executed in 277.382677 seconds
 
 </pre>
 </div>
@@ -3336,8 +3335,8 @@ ARIMA calculations was executed in 298.09801 seconds
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>I hope you enjoyed reading through this notebook and the basic steps I explained here could be useful to understand a possible use case of Spark or big data tool in general.</p>
-<p>Please, feel free to <a href="http://www.christopheduong.com">contact me</a> if you have any comments or further questions.</p>
+<p>I hope you enjoyed reading through this notebook. I believe the basic steps I explained here could be useful to understand a possible use case of Spark or Big Data tool in general.</p>
+<p>Please, feel free to <a href="http://www.christopheduong.com">contact me</a> if you have any comments or further questions about this post.</p>
 </div>
 </div>
 </div>
