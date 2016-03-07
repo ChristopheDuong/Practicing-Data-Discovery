@@ -41,3 +41,6 @@ http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blo
 
 Example of recommender system:
 http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/gh-pages/recommendations/recommendations.ipynb
+
+Analysis of US census Data:
+http://nbviewer.ipython.org/github/ChristopheDuong/Practicing-Data-Discovery/blob/gh-pages/us-census/Explore.ipynb
